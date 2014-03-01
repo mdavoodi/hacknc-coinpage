@@ -18,15 +18,10 @@ from flask import Flask, request, session, url_for, redirect, \
 from werkzeug import check_password_hash, generate_password_hash
 
 
-# configuration
-DATABASE = '/tmp/minitwit.db'
-PER_PAGE = 30
-DEBUG = True
-SECRET_KEY = 'development key'
 
 # create our little application :)
 app = Flask(__name__)
-app.config.from_object(__name__)
+app.config.from_object('config')
 app.config.from_envvar('MINITWIT_SETTINGS', silent=True)
 
 
