@@ -196,6 +196,11 @@ def login():
 def register():
     """Registers the user."""
     return render_template('register.html')
+    
+@app.route('/fb', methods=['GET', 'POST'])
+def register():
+    """Testing FB framework."""
+    return render_template('fb.html')
 
 
 @app.route('/logout')
@@ -213,4 +218,5 @@ app.jinja_env.filters['gravatar'] = gravatar_url
 
 if __name__ == '__main__':
     init_db()
+    app.debug = True
     app.run()
