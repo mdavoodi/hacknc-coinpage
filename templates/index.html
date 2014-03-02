@@ -41,7 +41,7 @@
         render    : "canvas",  // 'canvas' or 'table'. Default value is 'canvas'
         background : "#ffffff",
         foreground : "#000000",
-        size: 160,
+        size: 180,
         label: 'QR Code For address'
     });
 };
@@ -109,7 +109,7 @@
 		{%for result in results%}
 
         <article class="search-result row">
-            <div class="col-xs-12 col-sm-12 col-md-5">
+            <div class="col-xs-12 col-sm-12 col-md-6">
 		        {% for address in result.adresses %}
 				<div id="qrcodehold{{address.address}}" style="float:right;margin-right:25px;margin-top:10px" > </div>
 				{% endfor %}		
