@@ -7,50 +7,60 @@
 <script src="{{ url_for('static', filename='js/bootstrap-select.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery.qrcode-0.7.0.min.js') }}"></script>
 <script type="text/javascript">
-$(document).ready(function() 
-	$(selector).qrcode();
-	$('.selectpicker').selectpicker();
+$(document).ready(function() {
+$('#qrcodeholder').qrcode({
+        text    : "You win! This is cool QR code. Talk to Darius or Mohammad for a prize",
+        render    : "canvas",  // 'canvas' or 'table'. Default value is 'canvas'
+        background : "#ffffff",
+        foreground : "#000000",
+		size: 100,
+		label: 'QR Code For address'
+    });
+$('.selectpicker').selectpicker();
 });
 </script>
 
 <div class="container">
-	<div class="row">
-		<div class="col-xs-12 col-sm-6 col-md-10 col-md-offset-1">
-			<div class="well well-sm">
-				<div class="row">
-					<div class="col-sm-6 col-md-3">
-						<img src="http://placehold.it/200x200" alt="" class="img-rounded img-responsive" />
+<div class="row">
+	<div class="col-xs-12 col-sm-6 col-md-10 col-md-offset-1">
+		<div class="well well-sm">
+			<div class="row">
+				<div class="col-sm-6 col-md-3">
+					<img src="http://placehold.it/200x200" alt="" class="img-rounded img-responsive" />
+				</div>
+				
+				<div class="col-sm-6 col-md-5">
+					<h3>
+						Mohammed Davoodi</h3>
+						<h4 title="San Francisco, USA"> <i class="glyphicon glyphicon-map-marker" style="margin-right:10px">
+						</i>San Francisco, USA </h4>
+						<h4><i class="glyphicon glyphicon-envelope" style="margin-right:10px"></i>email@example.com</h4>
+						<h4><i class="glyphicon glyphicon-phone" style="margin-right:10px"></i>540-250-5313</h4>
+						<br />
 					</div>
-					<div class="col-sm-6 col-md-5">
-						<h3>
-							Mohammed Davoodi</h3>
-							<h4 title="San Francisco, USA"> <i class="glyphicon glyphicon-map-marker" style="margin-right:10px">
-							</i>San Francisco, USA </h4>
-							<h4><i class="glyphicon glyphicon-envelope" style="margin-right:10px"></i>email@example.com</h4>
-							<h4><i class="glyphicon glyphicon-phone" style="margin-right:10px"></i>540-250-5313</h4>
-							<br />
-						</div>
-						<div class="form-inline col-sm-6 col-md-8">
-							<canvas width="400" height="400"></canvas>
+					<div id="qrcodeholder" style="float:right;margin-right:25px;margin-top:10px" > </div>
+					<div class="form-inline col-sm-6 col-md-8">
+						
 
-							<p>Add Address:</p>
-							<button type="button" class="btn btn-default btn-md">
-								<span class="glyphicon glyphicon-plus"></span>
-							</button>                        
-							<select class="selectpicker" data-live-search="true" style="float:left;">
-								<option>Bitcoin</option>
-								<option>Dogecoin</option>
-								<option>Litecoin</option>
-								<option>Digitalcoin</option>
-							</select>
-							<input type="text" class="form-control" placeholder="Address" style="width:52%">
+						<p>Add Address:</p>
+						
+						<button type="button" class="btn btn-default btn-md">
+							<span class="glyphicon glyphicon-plus"></span>
+						</button>                        
+						<select class="selectpicker" data-live-search="true" style="float:left;">
+							<option>Bitcoin</option>
+							<option>Dogecoin</option>
+							<option>Litecoin</option>
+							<option>Digitalcoin</option>
+						</select>
+						<input type="text" class="form-control" placeholder="Address" style="width:52%">
                       
-						</div>
-					  
 					</div>
+					  
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
 
-	{% endblock %}
+{% endblock %}
