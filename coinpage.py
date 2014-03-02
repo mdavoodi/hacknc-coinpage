@@ -64,6 +64,7 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+
     """Registers the user."""
     return render_template('register.html')
 
@@ -73,20 +74,27 @@ def fb():
     return render_template('fb.html')
 
 
-@app.route('/logout')
-def logout():
-    """Logs the user out."""
-    flash('You were logged out')
-    session.pop('user_id', None)
-    return redirect(url_for('public_timeline'))
+def pop_login_session():
+    session.pop('logged_in', None)
+    session.pop('oauth_token', None)
+    session.pop('email', None)
+
 
 
 @app.route('/login')
 def login():
+    if session.get('logged_in') == True:
+        user = User.query.filter_by(email=session['email']).first()
+        pic_url = "http://graph.facebook.com/%s/picture?height=200" % session['id']
+        return render_template('register.html', user=user, pic_url=pic_url)
     return facebook.authorize(callback=url_for('facebook_authorized',
         next=request.args.get('next') or request.referrer or None,
         _external=True))
 
+@app.route("/logout")
+def logout():
+    pop_login_session()
+    return redirect(url_for('index'))
 
 @app.route('/login/authorized')
 @facebook.authorized_handler
@@ -97,10 +105,13 @@ def facebook_authorized(resp):
             request.args['error_description']
         )
     session['oauth_token'] = (resp['access_token'], '')
+    session['logged_in'] = True
     me = facebook.get('/me')
     email = me.data['email']
     user = None
     pic_url = None
+    session['email'] = me.data['email']
+    session['id'] = me.data['id']
     if user_email_exists(email):
         user = User.query.filter_by(email=me.data['email']).first()
     else:
