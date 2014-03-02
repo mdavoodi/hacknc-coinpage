@@ -17,12 +17,27 @@ from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, g, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
 
-
+from flask_oauth import OAuth
 
 # create our little application :)
 app = Flask(__name__)
 app.config.from_object('config')
 app.config.from_envvar('MINITWIT_SETTINGS', silent=True)
+
+
+app.debug = app.config['DEBUG']
+app.secret_key = app.config['SECRET_KEY']
+oauth = OAuth()
+
+facebook = oauth.remote_app('facebook',
+    base_url='https://graph.facebook.com/',
+    request_token_url=None,
+    access_token_url='/oauth/access_token',
+    authorize_url='https://www.facebook.com/dialog/oauth',
+    consumer_key= app.config['FACEBOOK_APP_ID'],
+    consumer_secret=app.config['FACEBOOK_APP_SECRET'],
+    request_token_params={'scope': 'email'}
+)
 
 
 def get_db():
@@ -171,27 +186,6 @@ def add_message():
     return redirect(url_for('timeline'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """Logs the user in."""
-    if g.user:
-        return redirect(url_for('timeline'))
-    error = None
-    if request.method == 'POST':
-        user = query_db('''select * from user where
-            username = ?''', [request.form['username']], one=True)
-        if user is None:
-            error = 'Invalid username'
-        elif not check_password_hash(user['pw_hash'],
-                                     request.form['password']):
-            error = 'Invalid password'
-        else:
-            flash('You were logged in')
-            session['user_id'] = user['user_id']
-            return redirect(url_for('timeline'))
-    return render_template('login.html', error=error)
-
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Registers the user."""
@@ -210,6 +204,31 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('public_timeline'))
 
+
+@app.route('/login')
+def login():
+    return facebook.authorize(callback=url_for('facebook_authorized',
+        next=request.args.get('next') or request.referrer or None,
+        _external=True))
+
+
+@app.route('/login/authorized')
+@facebook.authorized_handler
+def facebook_authorized(resp):
+    if resp is None:
+        return 'Access denied: reason=%s error=%s' % (
+            request.args['error_reason'],
+            request.args['error_description']
+        )
+    session['oauth_token'] = (resp['access_token'], '')
+    me = facebook.get('/me')
+    return 'Logged in as id=%s name=%s redirect=%s' % \
+        (me.data['id'], me.data['name'], request.args.get('next'))
+
+
+@facebook.tokengetter
+def get_facebook_oauth_token():
+    return session.get('oauth_token')
 
 # add some filters to jinja
 app.jinja_env.filters['datetimeformat'] = format_datetime

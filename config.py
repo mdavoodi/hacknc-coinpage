@@ -1,5 +1,8 @@
 CSRF_ENABLED = True
-SECRET_KEY = 'key-of-awesome'
 DEBUG = True
 PER_PAGE = 30
 DATABASE = '/tmp/minitwit.db'
+SECRET_KEY = 'development key'
+DEBUG = True
+FACEBOOK_APP_ID = '1456143767948268'
+FACEBOOK_APP_SECRET = '15f78747c468ddb43d6222018c803945'
