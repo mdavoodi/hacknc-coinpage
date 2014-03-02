@@ -198,7 +198,7 @@ def register():
     return render_template('register.html')
     
 @app.route('/fb', methods=['GET', 'POST'])
-def register():
+def fb():
     """Testing FB framework."""
     return render_template('fb.html')
 
