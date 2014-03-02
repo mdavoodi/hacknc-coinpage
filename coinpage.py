@@ -35,9 +35,29 @@ class User(db.Model):
     __searchable__ = ['full_name']
     id = db.Column(db.Integer, primary_key = True)
     full_name = db.Column(db.String(64), index = True, unique = False)
+    username = db.Column(db.String(64), index = True, unique = True)
     email = db.Column(db.String(120), index = True, unique = True)
     location = db.Column(db.String(120), index = True, unique = False)
     adresses = db.relationship('Address', backref='owner', lazy='dynamic')
+   
+    @property
+    def serialize(self):
+       """Return object data in easily serializeable format"""
+       return {
+           'full_name'         : self.full_name,
+           'email': self.email,
+           'location':self.location,
+           # This is an example how to deal with Many2Many relations
+           'addresses'  : self.serialize_many2many
+       }
+
+    @property
+    def serialize_many2many(self):
+       """
+       Return object's relations in easily serializeable format.
+       NB! Calls many2many's serialize property.
+       """
+       return [ item.serialize for item in self.adresses]
 
     def __repr__(self):
         return '<User %r>' % (self.full_name)
@@ -50,28 +70,21 @@ class Address(db.Model):
     coin = db.Column(db.String(10), index = True, unique = False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+    @property
+    def serialize(self):
+       """Return object data in easily serializeable format"""
+       return {
+           'address'         : self.address,
+           'coin': self.coin,
+       }
+
 whooshalchemy.whoosh_index(app, User)
-
-class SearchForm(Form):
-    search = TextField('search', validators = [Required()])
-
-
-@app.before_request
-def before_request():
-    g.search_form = SearchForm()
-
-@app.route('/search', methods = ['POST'])
-def search():
-    if not g.search_form.validate_on_submit():
-        return redirect(url_for('index'))
-    return redirect(url_for('search_results', query = g.search_form.search.data))
 
 
 @app.route('/')
 def index():
     logged_in = session.get('logged_in') == True
-
-    return render_template('index.html', logged_in=logged_in)
+    return render_template('index.html', logged_in=logged_in, results=[])
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -100,6 +113,13 @@ def add_address():
     db.session.add(entry)
     db.session.commit()
     return jsonify(result=entry.coin)
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    query = request.form['searchbox']
+    results = User.query.whoosh_search(query).all()
+    logged_in = session.get('logged_in') == True
+    return render_template('index.html', logged_in=logged_in, results=results)
 
 @app.route('/login')
 def login():
@@ -137,7 +157,7 @@ def facebook_authorized(resp):
     if user_email_exists(email):
         user = User.query.filter_by(email=me.data['email']).first()
     else:
-        user = User(full_name=me.data['name'], email=me.data['email'], location=me.data['location']['name'])
+        user = User(full_name=me.data['name'], email=me.data['email'], location=me.data['location']['name'], username=me.data['id'])
 
         db.session.add(user)
         db.session.commit()
