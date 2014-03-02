@@ -1,20 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-    MiniTwit
-    ~~~~~~~~
-
-    A microblogging application written with Flask and sqlite3.
-
-    :copyright: (c) 2014 by Armin Ronacher.
-    :license: BSD, see LICENSE for more details.
-"""
-
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, flash
+     render_template, flash, jsonify
 
 from flask_oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
-
+ 
 # create our little application :)
 app = Flask(__name__)
 app.config.from_object('config')
@@ -39,6 +28,7 @@ db = SQLAlchemy(app)
 
 class User(db.Model):
     __tablename__ = "user"
+    __searchable__ = ['full_name']
     id = db.Column(db.Integer, primary_key = True)
     full_name = db.Column(db.String(64), index = True, unique = False)
     email = db.Column(db.String(120), index = True, unique = True)
@@ -52,14 +42,16 @@ class Address(db.Model):
     __tablename__ = "address"
     id = db.Column(db.Integer, primary_key = True)
     primary = db.Column(db.Boolean, unique=False, default=False)
-    address = db.Column(db.String(32), index = True, unique = True)
+    address = db.Column(db.String(32), index = True, unique = False)
     coin = db.Column(db.String(10), index = True, unique = False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    logged_in = session.get('logged_in') == True
+
+    return render_template('index.html', logged_in=logged_in)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -79,14 +71,24 @@ def pop_login_session():
     session.pop('oauth_token', None)
     session.pop('email', None)
 
-
+@app.route('/_add_address', methods=['GET', 'POST'])
+def add_address():
+    currency = request.form['currency']
+    address = request.form['address']
+    u = User.query.filter_by(email=session['email']).first()
+    entry = Address(coin=currency, address=address, owner=u)
+    db.session.add(entry)
+    db.session.commit()
+    return jsonify(result=entry.coin)
 
 @app.route('/login')
 def login():
-    if session.get('logged_in') == True:
+    logged_in = session.get('logged_in') == True
+    if logged_in:
         user = User.query.filter_by(email=session['email']).first()
         pic_url = "http://graph.facebook.com/%s/picture?height=200" % session['id']
-        return render_template('register.html', user=user, pic_url=pic_url)
+        addr = user.adresses
+        return render_template('register.html', user=user, pic_url=pic_url, logged_in=logged_in, adresses=addr)
     return facebook.authorize(callback=url_for('facebook_authorized',
         next=request.args.get('next') or request.referrer or None,
         _external=True))
@@ -120,7 +122,7 @@ def facebook_authorized(resp):
         db.session.add(user)
         db.session.commit()
     pic_url = "http://graph.facebook.com/%s/picture?height=200" % me.data['id']
-    return render_template('register.html', user=user, pic_url=pic_url)
+    return redirect(url_for('login'))
 
 @facebook.tokengetter
 def get_facebook_oauth_token():

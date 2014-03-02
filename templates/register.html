@@ -19,7 +19,36 @@ $('#qrcodeholder').qrcode({
 $('.selectpicker').selectpicker();
 });
 </script>
-
+<script>
+function generateQR(currency, address){
+    var text = ""
+    if(currency == 'Dogecoin'){
+        text = text + "doge";
+    } else if (currency == 'Bitcoin'){
+        text = text + "bitcoin";
+    }
+    text = text + ":" + address
+    $('#qrcodehold' + address).qrcode({
+        text    : text,
+        render    : "canvas",  // 'canvas' or 'table'. Default value is 'canvas'
+        background : "#ffffff",
+        foreground : "#000000",
+        size: 100,
+        label: 'QR Code For address'
+    });
+};
+function addAddress() {
+    var currency = $('#coinSelect').find(":selected").text();
+    var address = $('input[name="addressValue"]').val();
+    console.log(address);
+    $.post('/_add_address', {
+        currency: currency,
+        address: address
+    });
+        generateQR(currency, address);
+        location.reload();
+}
+</script>
 <div class="container">
     <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-10 col-md-offset-1">
@@ -42,19 +71,42 @@ $('.selectpicker').selectpicker();
 
 						<p>Add Address:</p>
 						
-						<button type="button" class="btn btn-default btn-md">
+						<button type="button" class="btn btn-default btn-md" onclick="addAddress();">
 							<span class="glyphicon glyphicon-plus"></span>
 						</button>                        
-						<select class="selectpicker" data-live-search="true" style="float:left;">
+						<select id="coinSelect" class="selectpicker" data-live-search="true" style="float:left;">
 							<option>Bitcoin</option>
 							<option>Dogecoin</option>
 							<option>Litecoin</option>
 							<option>Digitalcoin</option>
 						</select>
-						<input type="text" class="form-control" placeholder="Address" style="width:52%">
-                      
+						<input name="addressValue" type="text" class="form-control" placeholder="Address" style="width:52%">
+                        <div id="addr">
+                      {% for address in adresses %}
+                      <div class="container">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="well well-sm">
+                                    <div class="media">
+                                            <div id="qrcodehold{{address.address}}" style="float:right;margin-right:25px;margin-top:10px" > </div>
+
+                                            <h5 class="media-heading">{{address.coin}}:</h5>
+                                            <h5 class="media-heading">{{address.address}}</h5>
+
+                                    </div>
+                                    <script type="text/javascript">
+                                        var currency = '{{address.coin}}';
+                                        var address = '{{address.address}}';
+                                        generateQR(currency, address);
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </div>
 					</div>
-					  
+					
 				</div>
 			</div>
 		</div>
