@@ -41,7 +41,7 @@
         render    : "canvas",  // 'canvas' or 'table'. Default value is 'canvas'
         background : "#ffffff",
         foreground : "#000000",
-        size: 100,
+        size: 160,
         label: 'QR Code For address'
     });
 };
@@ -106,9 +106,13 @@
             <div class="col-lg-12">
 
                 <section class="col-xs-12 col-sm-6 col-md-12">
-        {%for result in results%}
+		{%for result in results%}
+
         <article class="search-result row">
             <div class="col-xs-12 col-sm-12 col-md-5">
+		        {% for address in result.adresses %}
+				<div id="qrcodehold{{address.address}}" style="float:right;margin-right:25px;margin-top:10px" > </div>
+				{% endfor %}		
                 <a href="#" title="Lorem ipsum"><img src="http://graph.facebook.com/{{result.username}}/picture?height=200" style="width:250px;height:200px"alt="Lorem ipsum" /></a>
             </div>
             <div class="col-xs-12 col-sm-12 col-md-2">
@@ -122,8 +126,8 @@
             <span class="clearfix borda"></span>
         </article>
          {% for address in result.adresses %}
-            <div class="col-xs-12 col-sm-12 col-md-8 excerpet">
-                <div id="qrcodehold{{address.address}}" style="float:right;margin-right:25px;margin-top:10px" > </div>
+            <div class="col-xs-12 col-sm-12 col-md-3 excerpet">
+                
                 <h5 class="media-heading">{{address.coin}}</h5>
                 <h5 class="media-heading">{{address.address}}</h5>
             </div>
