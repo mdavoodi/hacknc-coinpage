@@ -5,6 +5,8 @@ SECRET_KEY = 'development key'
 DEBUG = True
 FACEBOOK_APP_ID = '1456143767948268'
 FACEBOOK_APP_SECRET = '15f78747c468ddb43d6222018c803945'
+MAX_SEARCH_RESULTS = 50
+
 
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))

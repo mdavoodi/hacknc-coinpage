@@ -1,9 +1,13 @@
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, flash, jsonify
+     render_template, flash, jsonify, g
 
 from flask_oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
- 
+import flask.ext.whooshalchemy as whooshalchemy
+
+from wtforms import Form, TextField
+from wtforms.validators import Required
+
 # create our little application :)
 app = Flask(__name__)
 app.config.from_object('config')
@@ -45,6 +49,22 @@ class Address(db.Model):
     address = db.Column(db.String(32), index = True, unique = False)
     coin = db.Column(db.String(10), index = True, unique = False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+whooshalchemy.whoosh_index(app, User)
+
+class SearchForm(Form):
+    search = TextField('search', validators = [Required()])
+
+
+@app.before_request
+def before_request():
+    g.search_form = SearchForm()
+
+@app.route('/search', methods = ['POST'])
+def search():
+    if not g.search_form.validate_on_submit():
+        return redirect(url_for('index'))
+    return redirect(url_for('search_results', query = g.search_form.search.data))
 
 
 @app.route('/')
