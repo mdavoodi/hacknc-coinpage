@@ -17,15 +17,14 @@ $(document).ready(function() {
             <div class="well well-sm">
                 <div class="row">
                     <div class="col-sm-6 col-md-3">
-                        <img src="http://placehold.it/200x200" alt="" class="img-rounded img-responsive" />
+                        <img src="{{pic_url}}" style="height:200px;width:200px;"alt="" class="img-rounded img-responsive" />
                     </div>
                     <div class="col-sm-6 col-md-5">
                         <h3>
-                            Mohammed Davoodi</h3>
+                            {{user.full_name}}</h3>
                             <h4 title="San Francisco, USA"> <i class="glyphicon glyphicon-map-marker" style="margin-right:10px">
-                              </i>San Francisco, USA </h4>
-                            <h4><i class="glyphicon glyphicon-envelope" style="margin-right:10px"></i>email@example.com</h4>
-                            <h4><i class="glyphicon glyphicon-phone" style="margin-right:10px"></i>540-250-5313</h4>
+                              </i>{{user.location}}</h4>
+                            <h4><i class="glyphicon glyphicon-envelope" style="margin-right:10px"></i>{{user.email}}</h4>
                             <br />
                     </div>
                                           <div class="form-inline col-sm-6 col-md-8">

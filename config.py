@@ -1,7 +1,6 @@
 CSRF_ENABLED = True
 DEBUG = True
 PER_PAGE = 30
-DATABASE = '/tmp/minitwit.db'
 SECRET_KEY = 'development key'
 DEBUG = True
 FACEBOOK_APP_ID = '1456143767948268'

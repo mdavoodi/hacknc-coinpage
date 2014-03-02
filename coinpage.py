@@ -34,8 +34,28 @@ facebook = oauth.remote_app('facebook',
     request_token_params={'scope': 'email,user_location'}
 )
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = SQLAlchemy(app)
+
+
+class User(db.Model):
+    __tablename__ = "user"
+    id = db.Column(db.Integer, primary_key = True)
+    full_name = db.Column(db.String(64), index = True, unique = False)
+    email = db.Column(db.String(120), index = True, unique = True)
+    location = db.Column(db.String(120), index = True, unique = False)
+    adresses = db.relationship('Address', backref='owner', lazy='dynamic')
+
+    def __repr__(self):
+        return '<User %r>' % (self.full_name)
+
+class Address(db.Model):
+    __tablename__ = "address"
+    id = db.Column(db.Integer, primary_key = True)
+    primary = db.Column(db.Boolean, unique=False, default=False)
+    address = db.Column(db.String(32), index = True, unique = True)
+    coin = db.Column(db.String(10), index = True, unique = False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
 @app.route('/')
 def index():
@@ -79,19 +99,24 @@ def facebook_authorized(resp):
     session['oauth_token'] = (resp['access_token'], '')
     me = facebook.get('/me')
     email = me.data['email']
-    if not user_email_exists(email):
-        return 'Logged in as id=%s name=%s redirect=%s' % \
-            (me.data['id'], me.data['name'], request.args.get('next'))
+    user = None
+    pic_url = None
+    if user_email_exists(email):
+        user = User.query.filter_by(email=me.data['email']).first()
     else:
-        return "User already exists"
+        user = User(full_name=me.data['name'], email=me.data['email'], location=me.data['location']['name'])
+
+        db.session.add(user)
+        db.session.commit()
+    pic_url = "http://graph.facebook.com/%s/picture?height=200" % me.data['id']
+    return render_template('register.html', user=user, pic_url=pic_url)
 
 @facebook.tokengetter
 def get_facebook_oauth_token():
     return session.get('oauth_token')
 
 def user_email_exists(email):
-    from models import User
-    return (not User.query.filter(email=email) == None)
+    return not (User.query.filter_by(email=email).first() == None)
 
 if __name__ == '__main__':
     app.debug = True
