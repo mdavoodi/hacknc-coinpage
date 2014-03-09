@@ -50,3 +50,7 @@ db_repository/
 *.seg
 
 *.toc
+
+*.seg
+
+*.toc
