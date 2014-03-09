@@ -36,3 +36,17 @@ nosetests.xml
 .pydevproject
 *.db
 db_repository/
+
+*.seg
+
+*.seg
+
+*.toc
+
+*.toc
+
+*.seg
+
+*.seg
+
+*.toc
